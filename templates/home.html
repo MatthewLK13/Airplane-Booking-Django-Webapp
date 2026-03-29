@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="bg-blue-600 p-10 rounded-3xl text-center text-white mb-10">
+    <h1 class="text-3xl font-bold mb-6">Bạn muốn bay đến đâu?</h1>
+    <form action="{% url 'search' %}" method="GET"
+        class="flex max-w-lg mx-auto bg-white rounded-full overflow-hidden p-1">
+        <input type="text" name="q" placeholder="Nhập điểm đến (vd: Hà Nội)..."
+            class="flex-1 px-6 text-slate-800 outline-none">
+        <button type="submit" class="bg-orange-500 px-8 py-3 rounded-full font-bold hover:bg-orange-600 transition">Tìm
+            ngay</button>
+    </form>
+</div>
+
+<div class="min-h-[calc(100vh-64px)] flex items-center justify-center bg-slate-100">
+    <div class="container mx-auto px-6 lg:px-20">
+        <div class="flex flex-col md:flex-row items-center justify-between py-20 gap-12">
+
+            <div class="flex-1 space-y-8 text-left">
+                <h1 class="text-6xl font-extrabold text-slate-800 leading-tight">
+                    Chạm tới bầu trời <br> cùng <span class="text-blue-600">Skyline Airlines</span>
+                </h1>
+                <p class="text-xl text-slate-600 max-w-lg">
+                    Trải nghiệm dịch vụ hàng không đẳng cấp 5 sao với mạng lưới chuyến bay toàn cầu.
+                    An toàn, tiện nghi và tận tâm trên từng dặm bay.
+                </p>
+
+                <div class="flex gap-5 pt-4">
+                    <a href="#search-section"
+                        class="bg-blue-600 text-white px-10 py-4 rounded-2xl font-bold hover:bg-blue-700 transition shadow-xl shadow-blue-200">
+                        Săn vé ngay
+                    </a>
+                    <a href="{% url 'web_generator' %}"
+                        class="bg-white text-slate-700 border-2 border-slate-200 px-10 py-4 rounded-2xl font-bold hover:bg-slate-50 transition">
+                        Khám phá Trình tạo Website
+                    </a>
+                </div>
+            </div>
+
+            <div class="flex-1 hidden md:block">
+                <div class="relative">
+                    <div class="absolute -inset-4 bg-blue-100 rounded-full blur-3xl opacity-30"></div>
+                    <img src="{% static 'images/hero-plane.jpg' %}"
+                        class="relative rounded-3xl shadow-2xl transform hover:scale-105 transition duration-500 w-full object-cover">
+                </div>
+            </div>
+
+        </div>
+    </div> 
+</div>
+
+<section class="max-w-2xl mx-auto my-10 p-6 bg-white rounded-xl shadow-md">
+    <h2 class="text-2xl font-bold mb-4 text-slate-800">Gửi phản hồi cho Skyline</h2>
+    <form action="{% url 'feedback' %}" method="POST" class="space-y-4">
+        {% csrf_token %}
+        <input type="text" name="name" placeholder="Tên của bạn" required class="w-full p-2 border rounded">
+        <input type="email" name="email" placeholder="Email liên hệ" required class="w-full p-2 border rounded">
+        <textarea name="message" placeholder="Bạn cảm thấy như thế nào về dịch vụ của chúng tôi" rows="4" required
+            class="w-full p-2 border rounded"></textarea>
+        <button type="submit"
+            class="w-full bg-blue-600 text-white font-bold py-2 rounded-xl hover:bg-blue-700 transition">
+            Gửi phản hồi ngay
+        </button>
+    </form>
+</section>
+
+<div id="chat-icon"
+    class="fixed bottom-6 right-6 bg-blue-600 p-4 rounded-full shadow-2xl cursor-pointer hover:scale-110 transition">
+    <span class="text-white font-bold">💬 AI Hỗ trợ</span>
+</div>
+
+<div id="chat-box"
+    class="hidden fixed bottom-24 right-6 w-80 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col">
+    <div class="bg-blue-600 p-4 text-white font-bold">Skyline AI Assistant</div>
+    <div id="chat-content" class="h-64 p-4 overflow-y-auto text-sm space-y-2">
+        ✈️ <b>Skyline AI xin chào!</b><br>
+        Tôi có thể giúp gì cho chuyến bay của bạn hôm nay không?
+    </div>
+    <div class="p-4 border-t flex">
+        <input id="chat-input" type="text" class="flex-1 outline-none text-sm" placeholder="Nhập câu hỏi...">
+        <button onclick="sendChat()" class="text-blue-600 font-bold ml-2">Gửi</button>
+    </div>
+</div>
+
+
+
+<script>
+    const chatIcon = document.getElementById('chat-icon');
+    const chatBox = document.getElementById('chat-box');
+    const chatContent = document.getElementById('chat-content');
+
+    chatIcon.onclick = () => chatBox.classList.toggle('hidden');
+
+    function sendChat() {
+        const input = document.getElementById('chat-input');
+        const message = input.value;
+        if (!message) return;
+
+        // Hiện tin nhắn của bạn
+        chatContent.innerHTML += `<p class="text-right"><b>Bạn:</b> ${message}</p>`;
+        input.value = '';
+
+        // Gọi API
+        fetch('/api/chat/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': '{{ csrf_token }}' },
+            body: `message=${message}&topic=chuyến bay và du lịch`
+        })
+            .then(res => res.json())
+            .then(data => {
+                chatContent.innerHTML += `<p class="bg-blue-50 p-2 rounded-lg"><b>AI:</b> ${data.reply}</p>`;
+                chatContent.scrollTop = chatContent.scrollHeight;
+            });
+    }
+</script>
+
+
+
+{% endblock %}
